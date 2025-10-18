@@ -223,3 +223,23 @@ Please reference our work if you find *TradingAgents* provides you with some hel
       url={https://arxiv.org/abs/2412.20138}, 
 }
 ```
+
+## How To Run On Cloud Top with Gemini
+
+```shell
+uv init
+
+uv venv
+
+source .venv/bin/activate
+
+uv add -r requirements.txt
+
+gcloud config set project chrisge-sandbox-103464
+
+gcloud auth application-default login --scopes='https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/generative-language.retriever'
+
+python -m cli.main
+
+```
+

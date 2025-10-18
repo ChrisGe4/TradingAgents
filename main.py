@@ -13,6 +13,7 @@ config["backend_url"] = "https://generativelanguage.googleapis.com/v1"  # Use a 
 config["deep_think_llm"] = "gemini-2.5-pro"  # Use a different model
 config["quick_think_llm"] = "gemini-2.5-pro"  # Use a different model
 config["max_debate_rounds"] = 1  # Increase debate rounds
+# config["online_tools"] = True  # Increase debate rounds
 
 # Configure data vendors (default uses yfinance and alpha_vantage)
 config["data_vendors"] = {
