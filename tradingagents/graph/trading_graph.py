@@ -83,7 +83,7 @@ class TradingAgentsGraph:
             self.quick_thinking_llm = ChatGoogleGenerativeAI(model=self.config["quick_think_llm"])
         else:
             raise ValueError(f"Unsupported LLM provider: {self.config['llm_provider']}")
-        
+
         # Initialize memories
         self.bull_memory = FinancialSituationMemory("bull_memory", self.config)
         self.bear_memory = FinancialSituationMemory("bear_memory", self.config)
@@ -234,23 +234,23 @@ class TradingAgentsGraph:
         ) as f:
             json.dump(self.log_states_dict, f, indent=4)
 
-    def reflect_and_remember(self, returns_losses):
-        """Reflect on decisions and update memory based on returns."""
-        self.reflector.reflect_bull_researcher(
-            self.curr_state, returns_losses, self.bull_memory
-        )
-        self.reflector.reflect_bear_researcher(
-            self.curr_state, returns_losses, self.bear_memory
-        )
-        self.reflector.reflect_trader(
-            self.curr_state, returns_losses, self.trader_memory
-        )
-        self.reflector.reflect_invest_judge(
-            self.curr_state, returns_losses, self.invest_judge_memory
-        )
-        self.reflector.reflect_risk_manager(
-            self.curr_state, returns_losses, self.risk_manager_memory
-        )
+    # def reflect_and_remember(self, returns_losses):
+    #     """Reflect on decisions and update memory based on returns."""
+    #     self.reflector.reflect_bull_researcher(
+    #         self.curr_state, returns_losses, self.bull_memory
+    #     )
+    #     self.reflector.reflect_bear_researcher(
+    #         self.curr_state, returns_losses, self.bear_memory
+    #     )
+    #     self.reflector.reflect_trader(
+    #         self.curr_state, returns_losses, self.trader_memory
+    #     )
+    #     self.reflector.reflect_invest_judge(
+    #         self.curr_state, returns_losses, self.invest_judge_memory
+    #     )
+    #     self.reflector.reflect_risk_manager(
+    #         self.curr_state, returns_losses, self.risk_manager_memory
+    #     )
 
     def process_signal(self, full_signal):
         """Process a signal to extract the core decision."""

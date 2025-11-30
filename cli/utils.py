@@ -206,6 +206,7 @@ def select_deep_thinking_agent(provider) -> str:
             ("Gemini 2.0 Flash - Next generation features, speed, and thinking", "gemini-2.0-flash"),
             ("Gemini 2.5 Flash - Adaptive thinking, cost efficiency", "gemini-2.5-flash"),
             ("Gemini 2.5 Pro", "gemini-2.5-pro"),
+            ("Gemini 3.0 Pro", "gemini-3-pro-preview"),
         ],
         "openrouter": [
             ("DeepSeek V3 - a 685B-parameter, mixture-of-experts model", "deepseek/deepseek-chat-v3-0324:free"),
