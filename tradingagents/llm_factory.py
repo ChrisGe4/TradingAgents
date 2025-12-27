@@ -224,10 +224,10 @@ class LLMFactory:
             "legacy": "claude-3-opus-20240229"  # Previous best
         },
         "google": {
-            "deep_thinking": "gemini-1.5-pro",  # Best reasoning
-            "fast_thinking": "gemini-1.5-flash",  # Fastest
-            "budget": "gemini-1.5-flash",  # Same as fast
-            "legacy": "gemini-pro"  # Previous generation
+            "deep_thinking": "gemini-3-pro-preview",  # Best reasoning
+            "fast_thinking": "gemini-3-flash-preview",  # Fastest
+            "budget": "gemini-2.5-flash-lite",  # Same as fast
+            "legacy": "gemini-2.5-pro"  # Previous generation
         }
     }
 

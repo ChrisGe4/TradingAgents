@@ -1,7 +1,8 @@
 import os
 
 DEFAULT_CONFIG = {
-    "project_dir": os.path.abspath(os.path.join(os.path.dirname(__file__), ".")),
+    "project_dir": os.path.abspath(
+      os.path.join(os.path.dirname(__file__), ".")),
     "results_dir": os.getenv("TRADINGAGENTS_RESULTS_DIR", "./results"),
     "data_dir": os.getenv("TRADINGAGENTS_DATA_DIR", "./data"),
     # SECURITY FIX: Removed hardcoded developer path
@@ -10,13 +11,13 @@ DEFAULT_CONFIG = {
         "dataflows/data_cache",
     ),
     # LLM settings
-    "llm_provider": "openai",
-    "deep_think_llm": "o4-mini",
-    "quick_think_llm": "gpt-4o-mini",
-    "backend_url": "https://api.openai.com/v1",
+    "llm_provider": "google",
+    "deep_think_llm": "gemini-3-pro-preview",
+    "quick_think_llm": "gemini-3-flash-preview",
+    "backend_url": "https://generativelanguage.googleapis.com/v1",
     # Debate and discussion settings
-    "max_debate_rounds": 1,
-    "max_risk_discuss_rounds": 1,
+    "max_debate_rounds": 2,
+    "max_risk_discuss_rounds": 2,
     "max_recur_limit": 100,
     # Data vendor configuration
     # Category-level configuration (default for all tools in category)

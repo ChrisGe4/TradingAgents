@@ -27,6 +27,7 @@ eodhd
 finnhub-python
 akshare
 tushare
+finnhub-python
 
 # Web Scraping & Parsing
 # -----------------------------------------------------------------------------

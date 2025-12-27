@@ -4,6 +4,8 @@ from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import os
 from .stockstats_utils import StockstatsUtils
+from .yfin_utils import YFinanceUtils
+import json
 
 def get_YFin_data_online(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -291,6 +293,24 @@ def get_stockstats_indicator(
         return ""
 
     return str(indicator_value)
+
+
+def get_fundamentals(
+    ticker: Annotated[str, "ticker symbol of the company"],
+    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
+) -> str:
+    """Get company fundamentals (info) from yfinance."""
+    try:
+        # Use YFinanceUtils to get stock info
+        info = YFinanceUtils.get_stock_info(ticker)
+        
+        if not info:
+            return f"No fundamentals found for symbol '{ticker}'"
+            
+        return json.dumps(info, indent=2)
+        
+    except Exception as e:
+        return f"Error retrieving fundamentals for {ticker}: {str(e)}"
 
 
 def get_balance_sheet(
