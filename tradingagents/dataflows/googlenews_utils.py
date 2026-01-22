@@ -1,108 +1,67 @@
-import json
-import requests
-from bs4 import BeautifulSoup
+import logging
 from datetime import datetime
-import time
-import random
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_exponential,
-    retry_if_exception_type,
-    retry_if_result,
-)
+from gnews import GNews
+
+logger = logging.getLogger("tools.google_news")
 
 
-def is_rate_limited(response):
-    """Check if the response indicates rate limiting (status code 429)"""
-    return response.status_code == 429
-
-
-@retry(
-    retry=(retry_if_result(is_rate_limited)),
-    wait=wait_exponential(multiplier=1, min=4, max=60),
-    stop=stop_after_attempt(5),
-)
-def make_request(url, headers):
-    """Make a request with retry logic for rate limiting"""
-    # Random delay before each request to avoid detection
-    time.sleep(random.uniform(2, 6))
-    response = requests.get(url, headers=headers)
-    return response
-
-
-def getNewsData(query, start_date, end_date):
-    """
-    Scrape Google News search results for a given query and date range.
-    query: str - search query
-    start_date: str - start date in the format yyyy-mm-dd or mm/dd/yyyy
-    end_date: str - end date in the format yyyy-mm-dd or mm/dd/yyyy
-    """
+def getNewsData(query, start_date, end_date, max_results=100):
+  """
+  Scrape Google News search results for a given query and date range.
+  query: str - search query
+  start_date: str - start date in the format yyyy-mm-dd or mm/dd/yyyy
+  end_date: str - end date in the format yyyy-mm-dd or mm/dd/yyyy
+  """
+  # Parse dates to tuple (Year, Month, Day) for GNews
+  try:
     if "-" in start_date:
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        start_date = start_date.strftime("%m/%d/%Y")
+      sd = datetime.strptime(start_date, "%Y-%m-%d")
+    else:
+      sd = datetime.strptime(start_date, "%m/%d/%Y")
+    
     if "-" in end_date:
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
-        end_date = end_date.strftime("%m/%d/%Y")
+      ed = datetime.strptime(end_date, "%Y-%m-%d")
+    else:
+      ed = datetime.strptime(end_date, "%m/%d/%Y")
 
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/101.0.4951.54 Safari/537.36"
-        )
-    }
+    start_date_tuple = (sd.year, sd.month, sd.day)
+    end_date_tuple = (ed.year, ed.month, ed.day)
+  except ValueError as e:
+    logger.error(f"Error parsing dates: {e}")
+    return []
 
-    news_results = []
-    page = 0
-    while True:
-        offset = page * 10
-        url = (
-            f"https://www.google.com/search?q={query}"
-            f"&tbs=cdr:1,cd_min:{start_date},cd_max:{end_date}"
-            f"&tbm=nws&start={offset}"
-        )
+  google_news = GNews(
+      start_date=start_date_tuple, end_date=end_date_tuple,
+      max_results=max_results
+  )
 
-        try:
-            response = make_request(url, headers)
-            soup = BeautifulSoup(response.content, "html.parser")
-            results_on_page = soup.select("div.SoaBEf")
+  try:
+    results = google_news.get_news(query)
+  except Exception as e:
+    logger.error(f"Error fetching news from GNews: {e}")
+    return []
 
-            if not results_on_page:
-                break  # No more results found
+  news_results = []
+  for item in results:
+    # Map GNews result to expected format
+    # GNews returns: {'title': ..., 'description': ..., 'published date': ..., 'url': ..., 'publisher': {'href': ..., 'title': ...}}
+    # We need: {'link': ..., 'title': ..., 'snippet': ..., 'date': ..., 'source': ...}
 
-            for el in results_on_page:
-                try:
-                    link = el.find("a")["href"]
-                    title = el.select_one("div.MBeuO").get_text()
-                    snippet = el.select_one(".GI74Re").get_text()
-                    date = el.select_one(".LfVVr").get_text()
-                    source = el.select_one(".NUnG9d span").get_text()
-                    news_results.append(
-                        {
-                            "link": link,
-                            "title": title,
-                            "snippet": snippet,
-                            "date": date,
-                            "source": source,
-                        }
-                    )
-                except Exception as e:
-                    print(f"Error processing result: {e}")
-                    # If one of the fields is not found, skip this result
-                    continue
+    try:
+      source = item.get("publisher", {}).get("title", "")
+      if not source and "publisher" in item and isinstance(item["publisher"],
+                                                           str):
+        source = item["publisher"]
 
-            # Update the progress bar with the current count of results scraped
+      news_results.append({
+          "link": item.get("url", ""),
+          "title": item.get("title", ""),
+          "snippet": item.get("description", ""),
+          "date": item.get("published date", ""),
+          "source": source,
+      })
+    except Exception as e:
+      logger.error(f"Error processing GNews result item: {e}")
+      continue
 
-            # Check for the "Next" link (pagination)
-            next_link = soup.find("a", id="pnnext")
-            if not next_link:
-                break
-
-            page += 1
-
-        except Exception as e:
-            print(f"Failed after multiple retries: {e}")
-            break
-
-    return news_results
+  return news_results

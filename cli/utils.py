@@ -140,7 +140,7 @@ def select_shallow_thinking_agent(provider) -> str:
             ("Claude Sonnet 4 - High performance and excellent reasoning", "claude-sonnet-4-0"),
         ],
         "google": [
-            ("Gemini 2.5 Flash - Adaptive thinking, cost efficiency", "gemini-2.5-flash"),
+            # ("Gemini 2.5 Flash - Adaptive thinking, cost efficiency", "gemini-2.5-flash"),
             ("Gemini 3.0 Flash - Adaptive thinking, cost efficiency",
              "gemini-3-flash-preview"),
         ],

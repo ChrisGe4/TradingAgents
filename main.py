@@ -13,23 +13,24 @@ config[
   "backend_url"] = "https://generativelanguage.googleapis.com/v1"  # Use a different backend
 config["deep_think_llm"] = "gemini-3-pro-preview"  # Use a different model
 config["quick_think_llm"] = "gemini-2.5-flash"  # Use a different model
-config["max_debate_rounds"] = 1  # Increase debate rounds
-# config["online_tools"] = True  # Increase debate rounds
+config["max_debate_rounds"] = 2  # Increase debate rounds
+config["online_tools"] = True  # Increase debate rounds
 
 # Configure data vendors (default uses yfinance and alpha_vantage)
 config["data_vendors"] = {
-    "core_stock_apis": "finnhub",  # Options: yfinance, alpha_vantage, local
-    "technical_indicators": "finnhub",
+    "core_stock_apis": "yfinance",  # Options: yfinance, alpha_vantage, local
+    "technical_indicators": "yfinance",
     # Options: yfinance, alpha_vantage, local
-    "fundamental_data": "finnhub",  # Options: openai, alpha_vantage, local
-    "news_data": "finnhub",  # Options: openai, alpha_vantage, google, local
+    "fundamental_data": "alpha_vantage",
+    # Options: openai, alpha_vantage, local
+    "news_data": "google",  # Options: openai, alpha_vantage, google, local
 }
 
 # Initialize with custom config
 ta = TradingAgentsGraph(debug=True, config=config)
 
 # forward propagate
-_, decision = ta.propagate("NVDA", "2025-12-24")
+_, decision = ta.propagate("APP", "2026-01-02")
 print(decision)
 
 # Memorize mistakes and reflect

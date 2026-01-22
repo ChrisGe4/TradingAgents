@@ -24,7 +24,6 @@ pandas
 numpy
 yfinance
 eodhd
-finnhub-python
 akshare
 tushare
 finnhub-python
@@ -35,6 +34,7 @@ requests
 feedparser
 parsel
 praw
+gnews
 
 # Technical Analysis & Backtesting
 # -----------------------------------------------------------------------------

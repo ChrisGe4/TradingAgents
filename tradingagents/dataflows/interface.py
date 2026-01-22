@@ -18,7 +18,7 @@ from .y_finance import get_YFin_data_online, get_stock_stats_indicators_window, 
   get_income_statement as get_yfinance_income_statement, \
   get_insider_transactions as get_yfinance_insider_transactions, \
   get_fundamentals as get_yfinance_fundamentals
-from .google import get_google_news
+from .google import get_google_news, get_global_news
 from .openai import get_stock_news_openai, get_global_news_openai, \
   get_fundamentals_openai
 from .finnhub import (
@@ -139,8 +139,7 @@ VENDOR_METHODS = {
         "local": [get_finnhub_news, get_reddit_company_news, get_google_news],
     },
     "get_global_news": {
-        "google": get_global_news_openai,
-        "finnhub": get_finnhub_news_api,
+        "google": get_global_news,
         "openai": get_global_news_openai,
         "local": get_reddit_global_news
     },
@@ -246,7 +245,7 @@ def route_to_vendor(method: str, *args, **kwargs):
     for impl_func, vendor_name in vendor_methods:
       try:
         logger.debug(
-          f"Calling {impl_func.__name__} from vendor '{vendor_name}'...")
+            f"Calling {impl_func.__name__} from vendor '{vendor_name}'...")
         result = impl_func(*args, **kwargs)
         vendor_results.append(result)
         logger.info(
@@ -283,7 +282,7 @@ def route_to_vendor(method: str, *args, **kwargs):
   # Final result summary
   if not results:
     logger.error(
-      f"All {vendor_attempt_count} vendor attempts failed for method '{method}'")
+        f"All {vendor_attempt_count} vendor attempts failed for method '{method}'")
     raise RuntimeError(
         f"All vendor implementations failed for method '{method}'")
   else:

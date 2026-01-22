@@ -6,6 +6,10 @@ import os
 from .stockstats_utils import StockstatsUtils
 from .yfin_utils import YFinanceUtils
 import json
+import logging
+
+logger = logging.getLogger("yfinance")
+
 
 def get_YFin_data_online(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -297,19 +301,114 @@ def get_stockstats_indicator(
 
 def get_fundamentals(
     ticker: Annotated[str, "ticker symbol of the company"],
-    curr_date: Annotated[str, "current date (not used for yfinance)"] = None
-) -> str:
+    curr_date: Annotated[
+        str, "current date (not used for yfinance)"] = None) -> str:
     """Get company fundamentals (info) from yfinance."""
     try:
-        # Use YFinanceUtils to get stock info
-        info = YFinanceUtils.get_stock_info(ticker)
-        
-        if not info:
-            return f"No fundamentals found for symbol '{ticker}'"
-            
-        return json.dumps(info, indent=2)
-        
+        ticker_obj = yf.Ticker(ticker.upper())
+        data = ticker_obj.get_info()
+        result = f"# Company Overview: {ticker.upper()}\n"
+
+        # 格式化响应
+        if isinstance(data, dict) and data:
+            # 提取关键指标
+            result += f"# Retrieved on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+            # 基本信息
+            result += "## Basic Information\n"
+            result += f"**Name**: {data.get('shortName', 'N/A')}\n"
+            result += f"**Symbol**: {data.get('symbol', 'N/A')}\n"
+            result += f"**Exchange**: {data.get('fullExchangeName', 'N/A')}\n"
+            result += f"**Currency**: {data.get('currency', 'N/A')}\n"
+            result += f"**Country**: {data.get('country', 'N/A')}\n"
+            result += f"**Sector**: {data.get('sector', 'N/A')}\n"
+            result += f"**Industry**: {data.get('industry', 'N/A')}\n\n"
+            # 公司描述
+            description = data.get('longBusinessSummary', 'N/A')
+            if len(description) > 500:
+                description = description[:500] + "..."
+            result += f"**Description**: {description}\n\n"
+            ## 估值指标
+            result += "## Valuation Metrics\n"
+            result += f"**Trailing PE Ratio**: {data.get('trailingPE', 'N/A')}\n"
+            result += f"**Forward PE Ratio**: {data.get('forwardPE', 'N/A')}\n"
+            result += f"**PEG Ratio**: {data.get('trailingPegRatio', 'N/A')}\n"
+            result += f"**Price to Book**: {data.get('priceToBook', 'N/A')}\n"
+            result += f"**Price to Sales**: {data.get('priceToSalesTrailing12Months', 'N/A')}\n"
+            result += f"**EV to Revenue**: {data.get('enterpriseToRevenue', 'N/A')}\n"
+            result += f"**EV to EBITDA**: {data.get('enterpriseToEbitda', 'N/A')}\n\n"
+            # 财务指标
+            result += "## Quarterly Balance Sheet\n"
+            result += f"**Revenue TTM**: ${data.get('totalRevenue', 'N/A')}\n"
+            result += f"**Gross Profit TTM**: ${data.get('grossProfits', 'N/A')}\n"
+            result += f"**EBITDA**: ${data.get('ebitda', 'N/A')}\n"
+            result += f"**Net Income TTM**: ${data.get('netIncomeToCommon', 'N/A')}\n"
+            result += f"**Forward EPS**: ${data.get('epsForward', 'N/A')}\n"
+            result += f"**EPS TTM**: ${data.get('epsTrailingTwelveMonths', 'N/A')}\n\n"
+            # 盈利能力
+            result += "## Profitability\n"
+            result += f"**Profit Margin**: {data.get('profitMargins', 'N/A')}\n"
+            result += f"**Gross Margin**: {data.get('grossMargins', 'N/A')}\n"
+            result += f"**Operating Margin TTM**: {data.get('operatingMargins', 'N/A')}\n"
+            result += f"**Return on Assets TTM**: {data.get('returnOnAssets', 'N/A')}\n"
+            result += f"**Return on Equity TTM**: {data.get('returnOnEquity', 'N/A')}\n\n"
+            # 股息信息
+            result += "## Dividend Information\n"
+            result += f"**Dividend Per Share**: ${data.get('dividendRate', 'N/A')}\n"
+            result += f"**Dividend Yield**: {data.get('dividendYield', 'N/A')}\n"
+            result += f"**Dividend Date**: {data.get('dividendDate', 'N/A')}\n"
+            result += f"**Ex-Dividend Date**: {data.get('exDividendDate', 'N/A')}\n\n"
+            # 股票信息
+            result += "## Stock Information\n"
+            result += f"**52 Week High**: ${data.get('fiftyTwoWeekHigh', 'N/A')}\n"
+            result += f"**52 Week Low**: ${data.get('fiftyTwoWeekLow', 'N/A')}\n"
+            result += f"**50 Day MA**: ${data.get('fiftyDayAverage', 'N/A')}\n"
+            result += f"**200 Day MA**: ${data.get('twoHundredDayAverage', 'N/A')}\n"
+            result += f"**Shares Outstanding**: {data.get('sharesOutstanding', 'N/A')}\n"
+            result += f"**Beta**: {data.get('beta', 'N/A')}\n\n"
+
+            # 财务健康
+            result += "## Financial Health\n"
+            result += f"**Book Value**: ${data.get('bookValue', 'N/A')}\n"
+            result += f"**Debt to Equity**: {data.get('debtToEquity', 'N/A')}\n"
+            result += f"**Current Ratio**: {data.get('currentRatio', 'N/A')}\n"
+            result += f"**Quick Ratio**: {data.get('quickRatio', 'N/A')}\n\n"
+        else:
+            result += data
+
+        # result += "## Quarterly Income Statement:\n"
+        # result += f"${ticker_obj.get_income_stmt(pretty=True, freq='quarterly')}\n"
+        # result += "## Quarterly Balance Sheet\n"
+        # result += f"${ticker_obj.get_balance_sheet(pretty=True, freq='quarterly')}\n"
+        # result += "## Quarterly Cash Flow:\n"
+        # result += f"${ticker_obj.get_balance_sheet(pretty=True, freq='quarterly')}\n"
+        result += "## EPS Trend:\n"
+        result += f"${ticker_obj.get_eps_trend()}\n"
+        result += "## Analyst Price Targets:\n"
+        result += f"${ticker_obj.get_analyst_price_targets()}\n"
+        result += "## Dividends:\n"
+        result += f"${ticker_obj.get_dividends()}\n"
+        result += "## Earnings History:\n"
+        result += f"${ticker_obj.get_earnings_history()}\n"
+        result += "## Recommendations:\n"
+        result += f"${ticker_obj.get_recommendations()}\n"
+        result += "## Up/Down Graded:\n"
+        result += f"${ticker_obj.get_upgrades_downgrades()}\n"
+        result += "## SEC Filings:\n"
+        result += f"${ticker_obj.get_sec_filings()}\n"
+        # result += "## Insider Purchases:\n"
+        # result += f"${ticker_obj.get_insider_purchases()}\n"
+        # result += "## Insider Sales:\n"
+        # result += f"${ticker_obj.get_insider_transactions()}\n"
+        result += "## Growth Estimates:\n"
+        result += f"${ticker_obj.get_growth_estimates()}\n"
+
+        logger.info(f"✅ [YFinance] 成功获取基本面数据: {ticker}")
+        return result
+
+
     except Exception as e:
+        logger.error(f"❌ [YFinance] 获取基本面数据失败 {ticker}: {e}")
         return f"Error retrieving fundamentals for {ticker}: {str(e)}"
 
 

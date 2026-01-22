@@ -7,6 +7,9 @@ from dateutil.relativedelta import relativedelta
 import json
 from .reddit_utils import fetch_top_from_category
 from tqdm import tqdm
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_YFin_data_window(
     symbol: Annotated[str, "ticker symbol of the company"],
@@ -214,8 +217,13 @@ def get_data_in_range(ticker, start_date, end_date, data_type, data_dir, period=
             data_dir, "finnhub_data", data_type, f"{ticker}_data_formatted.json"
         )
 
-    data = open(data_path, "r")
-    data = json.load(data)
+    try:
+        with open(data_path, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        logger.warning(f"File not found: {data_path}")
+        return {}
+
 
     # filter keys (date, str in format YYYY-MM-DD) by the date range (str, str in format YYYY-MM-DD)
     filtered_data = {}
@@ -393,13 +401,18 @@ def get_reddit_global_news(
 
     while curr_iter_date <= curr_date_dt:
         curr_date_str = curr_iter_date.strftime("%Y-%m-%d")
-        fetch_result = fetch_top_from_category(
-            "global_news",
-            curr_date_str,
-            limit,
-            data_path=os.path.join(DATA_DIR, "reddit_data"),
-        )
-        posts.extend(fetch_result)
+        try:
+            fetch_result = fetch_top_from_category(
+                "global_news",
+                curr_date_str,
+                limit,
+                data_path=os.path.join(DATA_DIR, "reddit_data"),
+            )
+            posts.extend(fetch_result)
+        except FileNotFoundError:
+            logger.warning(
+                f"File not found for date {curr_date_str}, skipping.")
+
         curr_iter_date += relativedelta(days=1)
         pbar.update(1)
 
@@ -448,14 +461,19 @@ def get_reddit_company_news(
 
     while curr_date <= end_date_dt:
         curr_date_str = curr_date.strftime("%Y-%m-%d")
-        fetch_result = fetch_top_from_category(
-            "company_news",
-            curr_date_str,
-            10,  # max limit per day
-            query,
-            data_path=os.path.join(DATA_DIR, "reddit_data"),
-        )
-        posts.extend(fetch_result)
+        try:
+            fetch_result = fetch_top_from_category(
+                "company_news",
+                curr_date_str,
+                10,  # max limit per day
+                query,
+                data_path=os.path.join(DATA_DIR, "reddit_data"),
+            )
+            posts.extend(fetch_result)
+        except FileNotFoundError:
+            logger.warning(
+                f"File not found for date {curr_date_str}, skipping.")
+
         curr_date += relativedelta(days=1)
 
         pbar.update(1)
